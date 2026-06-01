@@ -1,5 +1,5 @@
 # Auto-generated from cncf/landscape — DO NOT EDIT MANUALLY.
-# Last updated: 2026-05-12
+# Last updated: 2026-06-01
 # Total projects: 224
 
 - name: Aeraki Mesh
@@ -465,7 +465,7 @@
   maturity: sandbox
   homepage: https://higress.io
   logo: higress.svg
-  repo_url: https://github.com/alibaba/higress
+  repo_url: https://github.com/higress-group/higress
 - name: HolmesGPT
   slug: holmesgpt
   maturity: sandbox
@@ -526,6 +526,7 @@
   homepage: https://k0sproject.io/
   logo: k0s-logo-2025.svg
   repo_url: https://github.com/k0sproject/k0s
+  has_dot_project: true
 - name: k3s
   slug: k3s
   maturity: sandbox
@@ -558,6 +559,7 @@
   homepage: https://kagent.dev/
   logo: kagent.svg
   repo_url: https://github.com/kagent-dev/kagent
+  has_dot_project: true
 - name: KAI Scheduler
   slug: kai-scheduler
   maturity: sandbox
@@ -1022,7 +1024,7 @@
   repo_url: https://github.com/openkruise/kruise
 - name: OpenTelemetry
   slug: opentelemetry
-  maturity: incubating
+  maturity: graduated
   homepage: https://opentelemetry.io/
   logo: open-telemetry.svg
   repo_url: https://github.com/open-telemetry/community
