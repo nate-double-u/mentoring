@@ -478,6 +478,7 @@ jobs:
               const itemId = addResult.addProjectV2ItemById.item.id;
 
               let currentStatus = null;
+              let readFailed = false;
               try {
                 const _cur = await github.graphql(`
                   query($itemId: ID!) {
@@ -490,10 +491,18 @@ jobs:
                 `, { itemId });
                 currentStatus = _cur?.node?.fieldValueByName?.name || null;
               } catch (e) {
+                readFailed = true;
                 core.warning(`Could not read current board status for #${num}: ${e.message}`);
               }
               if (currentStatus && ADMIN_OWNED.has(currentStatus)) {
                 console.log(`#${num} is in admin-owned column "${currentStatus}"; leaving placement to the administrator.`);
+                continue;
+              }
+              // Fail closed: the export loop always targets "Exported", so if
+              // the status read failed, skip this issue rather than risk
+              // pulling a manually-placed card back.
+              if (readFailed) {
+                core.warning(`Status read failed for #${num} while about to set "Exported"; skipping to avoid clobbering a manual placement.`);
                 continue;
               }
 

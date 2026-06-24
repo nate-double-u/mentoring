@@ -535,6 +535,7 @@ jobs:
               'Open for Applications', 'Applications Closed',
             ]);
             let currentStatus = null;
+            let readFailed = false;
             try {
               const _cur = await github.graphql(`
                 query($itemId: ID!) {
@@ -547,10 +548,18 @@ jobs:
               `, { itemId });
               currentStatus = _cur?.node?.fieldValueByName?.name || null;
             } catch (e) {
+              readFailed = true;
               core.warning(`Could not read current board status: ${e.message}`);
             }
             if (currentStatus && ADMIN_OWNED.has(currentStatus) && status !== 'Closed') {
               console.log(`Card is in admin-owned column "${currentStatus}"; leaving placement to the administrator.`);
+              return;
+            }
+            // Fail closed: if the status read failed we cannot tell whether the
+            // card is in an admin-owned column, so never risk pulling it back
+            // to "Exported".
+            if (readFailed && status === 'Exported') {
+              core.warning('Status read failed while about to set "Exported"; skipping to avoid clobbering a manual placement.');
               return;
             }
 
