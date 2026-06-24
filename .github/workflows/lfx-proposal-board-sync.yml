@@ -66,7 +66,7 @@ jobs:
               // Work backwards from the most advanced state
               if (labels.includes('Applications Closed'))       return 'Applications Closed';
               if (labels.includes('Open for Applications'))     return 'Open for Applications';
-              if (labels.includes('Mentors added'))             return 'Mentors added';
+              if (labels.includes('Mentors Registered'))        return 'Mentors added';
               if (labels.includes('LFX Approved'))              return 'LFX Approved';
               if (labels.includes('Posted to LFX'))             return 'Posted to LFX';
               if (labels.includes('Exported'))                  return 'Exported';

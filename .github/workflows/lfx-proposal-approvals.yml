@@ -474,7 +474,7 @@ jobs:
             if (issue.state === 'closed')                            status = 'Closed';
             else if (labels.includes('Applications Closed'))         status = 'Applications Closed';
             else if (labels.includes('Open for Applications'))       status = 'Open for Applications';
-            else if (labels.includes('Mentors added'))               status = 'Mentors added';
+            else if (labels.includes('Mentors Registered'))          status = 'Mentors added';
             else if (labels.includes('LFX Approved'))                status = 'LFX Approved';
             else if (labels.includes('Posted to LFX'))               status = 'Posted to LFX';
             else if (labels.includes('Exported'))                    status = 'Exported';
