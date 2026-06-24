@@ -156,8 +156,11 @@ kubernetes:
     - some-delegate
 ```
 
-The project slug must match the dropdown value in the issue form (lowercase,
-hyphenated).
+The key can be the project's **GitHub org** (recommended, e.g. `open-telemetry`),
+its **name** lowercased with spaces replaced by hyphens (e.g. `opentelemetry`), or
+its **`projects.yml` slug**. The workflow tries all three when matching the
+selected project, so any of them works. The same applies to the `overrides` keys
+in `quotas.yml`.
 
 ### quotas.yml
 
@@ -206,49 +209,90 @@ applied manually as you work with the LFX platform team.
 
 ## Secrets and setup
 
-### Required repository secret
+### Required repository secret: `PROJECT_TOKEN`
 
-**`PROJECT_TOKEN`** — a Personal Access Token used for Project v2 board
-sync via GraphQL.
+The board sync authenticates to the Project v2 GraphQL API with a
+`PROJECT_TOKEN` repository secret (Settings → Secrets and variables →
+Actions). Each environment needs its own token:
 
-- **For org-owned projects** (cncf/mentoring production): use a
-  fine-grained PAT with **Organization → Projects: Read and write** scope
-- **For user-owned projects** (dev/testing): use a **classic PAT** with
-  `project` scope (fine-grained tokens don't support Projects permission
-  for user-owned projects)
+| Environment | Board owner | Token type | Key scope |
+| --- | --- | --- | --- |
+| Prod (`cncf/mentoring`) | org `cncf` | fine-grained PAT, resource owner **cncf** | Organization → Projects: Read and write, plus Repository → Issues: Read |
+| Dev (fork) | your user | classic PAT | `project` |
 
-### Board IDs
+Fine-grained tokens do not offer a Projects permission for user-owned
+projects, which is why dev uses a classic PAT.
 
-The following IDs are hardcoded in the board sync sections of the
-validation, approvals, export, and board-sync workflows:
+**Creating the prod fine-grained PAT** (Settings → Developer settings →
+Personal access tokens → Fine-grained tokens → Generate new token):
 
-- `PROJECT_ID` — the Project v2 node ID
-- `STATUS_FIELD_ID` — the Status single-select field node ID
-- Status option IDs — one per board column
+1. **Resource owner:** `cncf`, not your personal account. This is what lets
+   the token reach the org board.
+2. **Repository access:** Only select repositories → `cncf/mentoring`.
+3. **Permissions:** Organization → Projects: Read and write, and
+   Repository → Issues: Read. (Metadata: Read is added automatically.)
+4. **Expiration:** the CNCF enterprise caps fine-grained token lifetime at
+   **366 days**. Pick a custom date at or under that limit; "no expiration"
+   is not allowed.
+5. If the org enforces the personal-access-token approval policy, the token
+   stays pending until an org owner approves it.
+6. Save the value as the `PROJECT_TOKEN` secret on `cncf/mentoring`.
 
-To find these IDs for a new board, use the GitHub GraphQL API:
+Tips when filling out the form:
+- The org permission is labeled simply **Projects** (not "Organization
+  Projects"). In the organization permission picker, search `projects`;
+  searching `organization` hides it, because the label has no "organization"
+  in it.
+- Set Projects to **Read and write**, not Read-only: the sync moves cards.
+- `Issues` is a **Repository** permission (Read is enough); `Projects` is an
+  **Organization** permission. They live under different tabs.
 
-```graphql
-query {
-  organization(login: "cncf") {
-    projectV2(number: 92) {
-      id
-      field(name: "Status") {
-        ... on ProjectV2SingleSelectField {
-          id
-          options { id name }
-        }
-      }
-    }
+**Rotation:** because the token expires (366 days max), set a reminder to
+regenerate it and update the secret before it lapses. When `PROJECT_TOKEN`
+expires the board sync runs start failing (visible as failed runs in the
+repo's Actions tab) while the rest of the automation keeps running;
+regenerating with the same scopes restores it. For prod, a GitHub
+App installation token is a more durable alternative (not tied to one
+person, no fixed expiry) if you later want to drop the rotation burden.
+
+### Board configuration (`board.json`)
+
+The board each repo syncs to is configured in
+[`board.json`](board.json), keyed by repository:
+
+```json
+{
+  "environments": {
+    "nate-double-u/mentoring": { "projectId": "PVT_..." },
+    "cncf/mentoring":          { "projectId": "PVT_..." }
   }
 }
 ```
 
-If the board changes, update the IDs in all four workflows:
-- `lfx-proposal-validate.yml`
-- `lfx-proposal-approvals.yml`
-- `lfx-export.yml`
-- `lfx-proposal-board-sync.yml`
+Each repo stores **only** the Project v2 node ID (`projectId`). The board
+sync steps resolve the Status field ID and the per-column option IDs live
+from the board at run time. This means:
+
+- dev (the fork) and prod (`cncf/mentoring`) run identical workflow code;
+- you never hand-transcribe Status option IDs;
+- the only hard requirement is that the board's **Status column names exactly
+  match** the lifecycle stages in the board table above (`Inbox`,
+  `Awaiting approvals/confirmations`, `Approved/confirmed`, `CNCF Approved`,
+  `Exported`, `Posted to LFX`, `LFX Approved`, `Mentors added`,
+  `Open for Applications`, `Applications Closed`, `Closed`).
+
+If a repo is not listed in `board.json` (or its `projectId` is still a
+`REPLACE_...` placeholder), board sync is skipped with a warning instead of
+failing, so the rest of the automation keeps working before the board exists.
+
+To point a repo at a different board, get the board's node ID:
+
+```graphql
+query { organization(login: "cncf") { projectV2(number: 93) { id } } }
+```
+
+and set it as that repo's `projectId` in `board.json`. No workflow edits are
+needed.
 
 ---
 

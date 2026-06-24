@@ -135,6 +135,7 @@ jobs:
 
               // ── Derive GitHub org and .project status from projects.yml ──
               let ghOrg = '';
+              let projectSlug = '';
               let hasDotProject = false;
               if (project) {
                 try {
@@ -142,11 +143,13 @@ jobs:
                   // Find the entry for this project and extract repo_url + has_dot_project
                   const projRe = new RegExp(
                     `- name: ${project.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n` +
-                    `[\\s\\S]*?(?=\\n- name:|$)`, 'm'
+                    `[\\s\\S]*?(?=\\n- name:|$)`
                   );
                   const projMatch = projYaml.match(projRe);
                   if (projMatch) {
                     const block = projMatch[0];
+                    const slugMatch = block.match(/^\s*slug:\s*(\S+)/m);
+                    if (slugMatch) projectSlug = slugMatch[1].trim().toLowerCase();
                     const urlMatch = block.match(/repo_url:\s*(\S+)/);
                     if (urlMatch) {
                       const urlParts = urlMatch[1].match(/github\.com\/([^/]+)\//);
@@ -245,11 +248,23 @@ jobs:
 
                   // 3a. Per-project fallback handles and teams
                   if (project) {
-                    const projectKey = project.toLowerCase().replace(/\s+/g, '-');
-                    const re = new RegExp(`^${projectKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:`, 'im');
-                    const parts = raw.split(re);
-                    if (parts.length > 1) {
-                      const section = parts[1].split(/^\S/m)[0];
+                    // approvers.yml may key a project by its normalized name, its
+                    // GitHub org, or its projects.yml slug; try each, first match wins.
+                    const projectKeys = [
+                      project.toLowerCase().replace(/\s+/g, '-'),
+                      ghOrg.toLowerCase(),
+                      projectSlug,
+                    ].filter((v, i, a) => v && a.indexOf(v) === i);
+                    let section = '';
+                    for (const key of projectKeys) {
+                      const re = new RegExp(`^${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:`, 'im');
+                      const parts = raw.split(re);
+                      if (parts.length > 1) {
+                        section = parts[1].split(/^\S/m)[0];
+                        break;
+                      }
+                    }
+                    if (section) {
                       // Check fallback_handles
                       const handleBlock = section.match(/fallback_handles:\s*\n((?:\s+-\s+\S+.*\n?)*)/);
                       if (handleBlock) {
@@ -418,21 +433,32 @@ jobs:
         with:
           github-token: ${{ secrets.PROJECT_TOKEN }}
           script: |
-            const PROJECT_ID = 'PVT_kwHOAEP2W84BXacI';
-            const STATUS_FIELD_ID = 'PVTSSF_lAHOAEP2W84BXacIzhSnctg';
-            const STATUS_OPTIONS = {
-              'Inbox':                             '83e636d5',
-              'Awaiting approvals/confirmations':  '40a97db9',
-              'Approved/confirmed':                '4ed57ec6',
-              'CNCF Approved':                     'f091cb7c',
-              'Exported':                          'faaeb133',
-              'Posted to LFX':                     '4355e838',
-              'LFX Approved':                      'e38391e0',
-              'Mentors added':                     'e11e1b3b',
-              'Open for Applications':             'fbbd298a',
-              'Applications Closed':               'c65ed09a',
-              'Closed':                            'dd85985a',
-            };
+            // ── Resolve this repo's board from board.json (dev vs prod) ──
+            // Only the projectId is stored per repo; the Status field ID and
+            // option IDs are resolved live from the board so the fork (dev) and
+            // cncf/mentoring (prod) run identical code. The board's Status
+            // column names must match the lifecycle stages used below.
+            const fs = require('fs');
+            const _board = JSON.parse(fs.readFileSync('programs/lfx-mentorship/automation/board.json', 'utf8'));
+            const _envCfg = (_board.environments || {})[process.env.GITHUB_REPOSITORY];
+            if (!_envCfg || !_envCfg.projectId || String(_envCfg.projectId).startsWith('REPLACE_')) {
+              core.warning(`No board configured for ${process.env.GITHUB_REPOSITORY} in board.json; skipping board sync.`);
+              return;
+            }
+            const PROJECT_ID = _envCfg.projectId;
+            const _statusField = (await github.graphql(`
+              query($projectId: ID!) {
+                node(id: $projectId) { ... on ProjectV2 {
+                  field(name: "Status") { ... on ProjectV2SingleSelectField { id options { id name } } }
+                } }
+              }
+            `, { projectId: PROJECT_ID })).node.field;
+            if (!_statusField) {
+              core.warning(`Project ${PROJECT_ID} has no "Status" field; skipping board sync.`);
+              return;
+            }
+            const STATUS_FIELD_ID = _statusField.id;
+            const STATUS_OPTIONS = Object.fromEntries(_statusField.options.map(o => [o.name, o.id]));
 
             const issue_number = context.issue.number;
             const { data: issue } = await github.rest.issues.get({
@@ -448,7 +474,7 @@ jobs:
             if (issue.state === 'closed')                            status = 'Closed';
             else if (labels.includes('Applications Closed'))         status = 'Applications Closed';
             else if (labels.includes('Open for Applications'))       status = 'Open for Applications';
-            else if (labels.includes('Mentors added'))               status = 'Mentors added';
+            else if (labels.includes('Mentors Registered'))          status = 'Mentors added';
             else if (labels.includes('LFX Approved'))                status = 'LFX Approved';
             else if (labels.includes('Posted to LFX'))               status = 'Posted to LFX';
             else if (labels.includes('Exported'))                    status = 'Exported';
@@ -460,6 +486,10 @@ jobs:
                                                                      status = 'Awaiting approvals/confirmations';
 
             const optionId = STATUS_OPTIONS[status];
+            if (!optionId) {
+              core.warning(`Board has no "${status}" status option; skipping board sync.`);
+              return;
+            }
             const addResult = await github.graphql(`
               mutation($projectId: ID!, $contentId: ID!) {
                 addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
