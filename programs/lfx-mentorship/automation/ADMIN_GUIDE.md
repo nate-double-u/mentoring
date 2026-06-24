@@ -249,8 +249,9 @@ Tips when filling out the form:
 
 **Rotation:** because the token expires (366 days max), set a reminder to
 regenerate it and update the secret before it lapses. When `PROJECT_TOKEN`
-expires the board sync stops silently while the rest of the automation keeps
-running; regenerating with the same scopes restores it. For prod, a GitHub
+expires the board sync runs start failing (visible as failed runs in the
+repo's Actions tab) while the rest of the automation keeps running;
+regenerating with the same scopes restores it. For prod, a GitHub
 App installation token is a more durable alternative (not tied to one
 person, no fixed expiry) if you later want to drop the rotation burden.
 

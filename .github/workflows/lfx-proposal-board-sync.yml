@@ -4,6 +4,9 @@ on:
   issues:
     types: [opened, labeled, unlabeled, closed, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   sync-board:
     if: >-
