@@ -479,20 +479,25 @@ jobs:
             ]);
             let currentStatus = null;
             let readFailed = false;
-            try {
-              const _cur = await github.graphql(`
-                query($itemId: ID!) {
-                  node(id: $itemId) { ... on ProjectV2Item {
-                    fieldValueByName(name: "Status") {
-                      ... on ProjectV2ItemFieldSingleSelectValue { name }
-                    }
-                  } }
-                }
-              `, { itemId });
-              currentStatus = _cur?.node?.fieldValueByName?.name || null;
-            } catch (e) {
-              readFailed = true;
-              core.warning(`Could not read current board status: ${e.message}`);
+            for (let attempt = 1; attempt <= 2; attempt++) {
+              try {
+                const _cur = await github.graphql(`
+                  query($itemId: ID!) {
+                    node(id: $itemId) { ... on ProjectV2Item {
+                      fieldValueByName(name: "Status") {
+                        ... on ProjectV2ItemFieldSingleSelectValue { name }
+                      }
+                    } }
+                  }
+                `, { itemId });
+                currentStatus = _cur?.node?.fieldValueByName?.name || null;
+                readFailed = false;
+                break;
+              } catch (e) {
+                readFailed = true;
+                core.warning(`Could not read current board status (attempt ${attempt}/2): ${e.message}`);
+                if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
+              }
             }
             if (currentStatus && ADMIN_OWNED.has(currentStatus) && status !== 'Closed') {
               console.log(`Card is in admin-owned column "${currentStatus}"; leaving placement to the administrator.`);
