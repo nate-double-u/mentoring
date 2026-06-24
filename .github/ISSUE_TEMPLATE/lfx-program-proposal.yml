@@ -322,10 +322,11 @@ body:
     attributes:
       label: Skills same as Technologies?
       description: >
-        If the skills an applicant needs are the same as the technologies
-        listed above, leave this checked and skip the next field.
+        Check this box if applicants need the same skills as the technologies
+        listed above. Otherwise leave it unchecked and fill in the
+        Required/Desirable Skills field below.
       options:
-        - label: "Yes — required skills are the same as the technologies listed above."
+        - label: "Yes, the required skills are the same as the technologies listed above."
           required: false
 
   # ── Required/Desirable Skills ─────────────────────────────────────
@@ -335,7 +336,7 @@ body:
       label: Required/Desirable Skills
       description: >
         Comma-separated. Only fill this in if the skills differ from the
-        Technologies above (and uncheck the box above). For example, a
+        Technologies above (and leave the box above unchecked). For example, a
         docs program might list "technical writing, Markdown" here even
         though the technologies are "Go, Kubernetes".
       placeholder: "e.g. technical writing, Markdown, Hugo"
@@ -348,10 +349,10 @@ body:
     attributes:
       label: Mentors
       description: >
-        One mentor per line. Format: `Full Name | @github-handle | lfid-or-email`.
+        One mentor per line. Format: `Full Name | @github-handle | email`.
         The **first line is the primary mentor**; additional lines are
-        co-mentors. Use the email address tied to your LFID, or your LFID
-        directly.
+        co-mentors. Use the email address tied to the mentor's LFID account on
+        the LFX platform.
       placeholder: |
         Jane Doe | @janedoe | jane@example.com
         Sam Lee  | @samlee  | sam@example.com
