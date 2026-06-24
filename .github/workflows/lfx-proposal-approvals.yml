@@ -371,9 +371,39 @@ jobs:
                 return;
               }
 
+              // Per-mentor confirmation: the gate flips only once EVERY listed
+              // mentor has confirmed. Gather confirmations from the issue's
+              // comment history (plus this one) and compare to the roster.
+              const roster = [...new Set(mentorHandles)];
+              const confirmed = new Set([commenter.toLowerCase()]);
+              try {
+                const priorComments = await github.paginate(github.rest.issues.listComments, {
+                  owner, repo, issue_number, per_page: 100,
+                });
+                const hasConfirm = (body) => (body || '').split(/\r?\n/)
+                  .some(l => /^\/confirm\b/.test(l.trim()));
+                for (const c of priorComments) {
+                  const author = (c.user?.login || '').toLowerCase();
+                  if (roster.includes(author) && hasConfirm(c.body)) confirmed.add(author);
+                }
+              } catch (e) {
+                core.warning(`Could not read prior confirmations: ${e.message}`);
+              }
+
+              const remaining = roster.filter(h => !confirmed.has(h));
+              if (remaining.length) {
+                await reply('✅',
+                  `Confirmation recorded from @${commenter}. ` +
+                  `${confirmed.size} of ${roster.length} mentors have confirmed.\n\n` +
+                  `Still waiting on: ${remaining.map(h => `@${h}`).join(', ')}.`);
+                return;
+              }
+
+              // Every listed mentor has now confirmed.
               await addLabel('Mentors Confirmed');
               await removeLabel('Awaiting Mentor Confirmation');
-              await reply('✅', `Mentor confirmation recorded from @${commenter}.`);
+              await reply('✅',
+                `All ${roster.length} listed mentor(s) have confirmed. Mentor confirmation is complete.`);
               await checkBothGates();
               return;
             }
@@ -471,12 +501,9 @@ jobs:
             if (!labels.includes('lfx mentorship') || !labels.includes('Proposal')) return;
 
             let status = 'Inbox';
+            // Automation owns the lifecycle only through "Exported"; the
+            // post-export columns are manual admin moves (see board guard below).
             if (issue.state === 'closed')                            status = 'Closed';
-            else if (labels.includes('Applications Closed'))         status = 'Applications Closed';
-            else if (labels.includes('Open for Applications'))       status = 'Open for Applications';
-            else if (labels.includes('Mentors Registered'))          status = 'Mentors added';
-            else if (labels.includes('LFX Approved'))                status = 'LFX Approved';
-            else if (labels.includes('Posted to LFX'))               status = 'Posted to LFX';
             else if (labels.includes('Exported'))                    status = 'Exported';
             else if (labels.includes('CNCF Approved'))               status = 'CNCF Approved';
             else if (labels.includes('Maintainer/Contribex Approved')
@@ -497,6 +524,35 @@ jobs:
                 }
               }
             `, { projectId: PROJECT_ID, contentId: issue.node_id });
+            const itemId = addResult.addProjectV2ItemById.item.id;
+
+            // ── Respect manual admin moves ──
+            // Automation owns the lifecycle only through "Exported". The
+            // post-export columns are advanced by hand, so never overwrite a
+            // card already sitting in one of them (except to reflect a close).
+            const ADMIN_OWNED = new Set([
+              'Posted to LFX', 'LFX Approved', 'Mentors added',
+              'Open for Applications', 'Applications Closed',
+            ]);
+            let currentStatus = null;
+            try {
+              const _cur = await github.graphql(`
+                query($itemId: ID!) {
+                  node(id: $itemId) { ... on ProjectV2Item {
+                    fieldValueByName(name: "Status") {
+                      ... on ProjectV2ItemFieldSingleSelectValue { name }
+                    }
+                  } }
+                }
+              `, { itemId });
+              currentStatus = _cur?.node?.fieldValueByName?.name || null;
+            } catch (e) {
+              core.warning(`Could not read current board status: ${e.message}`);
+            }
+            if (currentStatus && ADMIN_OWNED.has(currentStatus) && status !== 'Closed') {
+              console.log(`Card is in admin-owned column "${currentStatus}"; leaving placement to the administrator.`);
+              return;
+            }
 
             await github.graphql(`
               mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
@@ -507,7 +563,7 @@ jobs:
               }
             `, {
               projectId: PROJECT_ID,
-              itemId: addResult.addProjectV2ItemById.item.id,
+              itemId: itemId,
               fieldId: STATUS_FIELD_ID,
               optionId: optionId,
             });

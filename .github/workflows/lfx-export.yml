@@ -379,7 +379,7 @@ jobs:
             2. Merge this PR
             3. Share the JSON with the LFX platform team
             4. Once programs are created on LFX, update LFX URLs in the
-               README and add the `Posted to LFX` label to each issue
+               README and drag each issue's card to the `Posted to LFX` column
 
             </details>
           labels: administration
@@ -454,6 +454,13 @@ jobs:
             }
             const issues = process.env.EXPORTED_ISSUES.split(',').filter(Boolean);
 
+            // Never pull a card back to "Exported" if the administrator has
+            // already advanced it by hand to a post-export column.
+            const ADMIN_OWNED = new Set([
+              'Posted to LFX', 'LFX Approved', 'Mentors added',
+              'Open for Applications', 'Applications Closed',
+            ]);
+
             for (const num of issues) {
               const { data: issue } = await github.rest.issues.get({
                 owner: context.repo.owner,
@@ -468,6 +475,27 @@ jobs:
                   }
                 }
               `, { projectId: PROJECT_ID, contentId: issue.node_id });
+              const itemId = addResult.addProjectV2ItemById.item.id;
+
+              let currentStatus = null;
+              try {
+                const _cur = await github.graphql(`
+                  query($itemId: ID!) {
+                    node(id: $itemId) { ... on ProjectV2Item {
+                      fieldValueByName(name: "Status") {
+                        ... on ProjectV2ItemFieldSingleSelectValue { name }
+                      }
+                    } }
+                  }
+                `, { itemId });
+                currentStatus = _cur?.node?.fieldValueByName?.name || null;
+              } catch (e) {
+                core.warning(`Could not read current board status for #${num}: ${e.message}`);
+              }
+              if (currentStatus && ADMIN_OWNED.has(currentStatus)) {
+                console.log(`#${num} is in admin-owned column "${currentStatus}"; leaving placement to the administrator.`);
+                continue;
+              }
 
               await github.graphql(`
                 mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
@@ -478,7 +506,7 @@ jobs:
                 }
               `, {
                 projectId: PROJECT_ID,
-                itemId: addResult.addProjectV2ItemById.item.id,
+                itemId: itemId,
                 fieldId: STATUS_FIELD_ID,
                 optionId: EXPORTED_OPTION,
               });

@@ -63,12 +63,10 @@ jobs:
             }
 
             function determineFromLabels() {
-              // Work backwards from the most advanced state
-              if (labels.includes('Applications Closed'))       return 'Applications Closed';
-              if (labels.includes('Open for Applications'))     return 'Open for Applications';
-              if (labels.includes('Mentors Registered'))        return 'Mentors added';
-              if (labels.includes('LFX Approved'))              return 'LFX Approved';
-              if (labels.includes('Posted to LFX'))             return 'Posted to LFX';
+              // Automation owns the lifecycle only through "Exported". The
+              // post-export columns (Posted to LFX, LFX Approved, Mentors added,
+              // Open for Applications, Applications Closed) are advanced by hand
+              // by the administrator, so they are never derived from labels here.
               if (labels.includes('Exported'))                  return 'Exported';
               if (labels.includes('CNCF Approved'))             return 'CNCF Approved';
 
@@ -109,6 +107,35 @@ jobs:
 
             const itemId = addResult.addProjectV2ItemById.item.id;
             console.log(`Project item: ${itemId}`);
+
+            // ── Respect manual admin moves ──
+            // Automation owns the lifecycle only through "Exported". The
+            // post-export columns are advanced by hand as the administrator
+            // works with the LFX platform, so never overwrite a card that is
+            // already sitting in one of them (except to reflect a closed issue).
+            const ADMIN_OWNED = new Set([
+              'Posted to LFX', 'LFX Approved', 'Mentors added',
+              'Open for Applications', 'Applications Closed',
+            ]);
+            let currentStatus = null;
+            try {
+              const _cur = await github.graphql(`
+                query($itemId: ID!) {
+                  node(id: $itemId) { ... on ProjectV2Item {
+                    fieldValueByName(name: "Status") {
+                      ... on ProjectV2ItemFieldSingleSelectValue { name }
+                    }
+                  } }
+                }
+              `, { itemId });
+              currentStatus = _cur?.node?.fieldValueByName?.name || null;
+            } catch (e) {
+              core.warning(`Could not read current board status: ${e.message}`);
+            }
+            if (currentStatus && ADMIN_OWNED.has(currentStatus) && targetStatus !== 'Closed') {
+              console.log(`Card is in admin-owned column "${currentStatus}"; leaving placement to the administrator.`);
+              return;
+            }
 
             // ── Set the Status field ──
             await github.graphql(`

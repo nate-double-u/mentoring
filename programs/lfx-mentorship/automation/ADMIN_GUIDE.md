@@ -112,9 +112,10 @@ the existing branch if the previous PR wasn't merged).
 3. **Share `lfx-export.json` with the LFX platform team** for bulk import
 4. **After programs are created on LFX:**
    - Update LFX URLs in the README (manual step for now)
-   - Add the `Posted to LFX` label to each issue
-5. **Continue tracking** through the remaining lifecycle stages (LFX
-   Approved → Mentors added → Open for Applications → Applications Closed)
+   - Drag each issue's card to the `Posted to LFX` column on the board
+5. **Continue tracking** by dragging cards through the remaining columns by
+   hand as each step completes on the LFX platform (`LFX Approved` →
+   `Mentors added` → `Open for Applications` → `Applications Closed`)
 
 ---
 
@@ -179,7 +180,8 @@ overrides:
 
 ## Project board
 
-The automation maps issue labels to Project v2 board status columns:
+Automation manages the board **only through the `Exported` stage**. It maps
+issue labels to Project v2 board status columns:
 
 | Label combination | Board status |
 | --- | --- |
@@ -188,22 +190,30 @@ The automation maps issue labels to Project v2 board status columns:
 | `Maintainer/Contribex Approved` + `Mentors Confirmed` | Approved/confirmed |
 | `CNCF Approved` | CNCF Approved |
 | `Exported` | Exported |
-| `Posted to LFX` | Posted to LFX |
-| `LFX Approved` | LFX Approved |
-| `Mentors Registered` | Mentors added |
-| `Open for Applications` | Open for Applications |
-| `Applications Closed` | Applications Closed |
 | Issue closed | Closed |
 
+Everything after `Exported` is **yours to move by hand**. As you work with the
+LFX platform team, drag each card through the remaining columns:
+
+`Posted to LFX` → `LFX Approved` → `Mentors added` → `Open for Applications`
+→ `Applications Closed`
+
+Automation never moves a card once it sits in one of these post-export
+columns, so your manual placement is safe. (The one exception: closing the
+issue still sends its card to `Closed`.)
+
+> **Note:** `Mentors Registered` is reserved as a future signal, set by
+> validation once mentors are confirmed, to tell you to add the mentors on the
+> LFX platform. It is distinct from the `Mentors added` column, which you drag
+> to by hand once that work is done.
+
 The board sync runs in three ways:
-1. **Standalone workflow** — triggers on issue label changes
-2. **Inline** — at the end of validation, approvals, and export workflows
+1. **Standalone workflow**: triggers on issue label changes
+2. **Inline**: at the end of validation, approvals, and export workflows
    (needed because `GITHUB_TOKEN` label changes don't trigger other
    workflows)
-3. **Manual** — you can always drag cards on the board directly
-
-Post-export lifecycle labels (`Posted to LFX`, `LFX Approved`, etc.) are
-applied manually as you work with the LFX platform team.
+3. **Manual**: you drag cards directly; this is the only way cards advance
+   through the post-export columns
 
 ---
 
