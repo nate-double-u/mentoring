@@ -46,4 +46,5 @@ test('csvEscape: coerces null/undefined to empty and numbers to strings', () => 
   assert.equal(csvEscape(null), '');
   assert.equal(csvEscape(undefined), '');
   assert.equal(csvEscape(5), '5');
+  assert.equal(csvEscape(0), '0');
 });

@@ -34,8 +34,9 @@ function parseCheckboxes(raw) {
 }
 
 // Parse the pipe-separated Mentors field into structured mentor objects. Lines
-// with 3 or 4 fields are kept (LFID is the optional 4th); any other field
-// count drops the line. The first valid line is the primary mentor.
+// with 3 or 4 fields are kept (LFID is the optional 4th); any other field count
+// drops the line. Role is by position: the first non-empty line is primary, the
+// rest co-mentors (a malformed first line is a blocking validation error upstream).
 function parseMentors(raw) {
   if (!raw) return [];
   return raw.split(/\r?\n/)
