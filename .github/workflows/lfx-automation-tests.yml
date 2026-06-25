@@ -20,6 +20,11 @@ on:
     paths:
       - 'programs/lfx-mentorship/automation/lib/**'
       - 'programs/lfx-mentorship/automation/test/**'
+      - '.github/workflows/lfx-automation-tests.yml'
+      - '.github/workflows/lfx-proposal-validate.yml'
+      - '.github/workflows/lfx-proposal-approvals.yml'
+      - '.github/workflows/lfx-proposal-board-sync.yml'
+      - '.github/workflows/lfx-export.yml'
 
 permissions:
   contents: read
