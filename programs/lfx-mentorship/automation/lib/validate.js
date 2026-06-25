@@ -39,7 +39,7 @@ function validateMentors(raw) {
     const parts = line.split('|').map(p => p.trim());
 
     if (parts.length !== 3 && parts.length !== 4) {
-      errors.push({ role, code: 'count', got: parts.length });
+      errors.push({ role, code: 'count', got: parts.length, line });
       return;
     }
 

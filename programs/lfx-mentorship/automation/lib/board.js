@@ -54,8 +54,10 @@ function shouldSkipExport(currentStatus, readFailed) {
 // Read the card's current Status with a small retry. readFn(attempt) is called
 // with the 1-based attempt number and must resolve to the GraphQL node shape
 // ({ node: { fieldValueByName: { name } } }); on every attempt throwing,
-// readFailed is true. The sleep is injectable so tests need not wait.
-async function readStatusWithRetry(readFn, { attempts = 2, delayMs = 1000, sleep } = {}) {
+// readFailed is true. onError(attempt, err), when given, is called for each
+// failed attempt (used to preserve the workflows' per-attempt warning logs).
+// The sleep is injectable so tests need not wait.
+async function readStatusWithRetry(readFn, { attempts = 2, delayMs = 1000, sleep, onError } = {}) {
   const wait = sleep || ((ms) => new Promise(r => setTimeout(r, ms)));
   let currentStatus = null;
   let readFailed = false;
@@ -67,6 +69,7 @@ async function readStatusWithRetry(readFn, { attempts = 2, delayMs = 1000, sleep
       break;
     } catch (e) {
       readFailed = true;
+      if (onError) onError(attempt, e);
       if (attempt < attempts) await wait(delayMs);
     }
   }

@@ -37,6 +37,13 @@ test('validateMentors: wrong field counts flag "count" and skip the line', () =>
   assert.deepEqual(codes(validateMentors('Jane | @j | j@x.com | jlfid | extra')), ['count']);
 });
 
+test('validateMentors: the "count" error carries the offending line for the message', () => {
+  const e = validateMentors('Jane Doe | @janedoe').errors[0];
+  assert.equal(e.code, 'count');
+  assert.equal(e.got, 2);
+  assert.equal(e.line, 'Jane Doe | @janedoe');
+});
+
 test('validateMentors: a malformed LFID (URL) flags "lfid-format"', () => {
   assert.deepEqual(
     codes(validateMentors('Jane Doe | @janedoe | jane@example.com | https://openprofile.dev/profile/janedoe')),

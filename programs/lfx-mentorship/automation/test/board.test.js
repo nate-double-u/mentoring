@@ -84,3 +84,13 @@ test('readStatusWithRetry: a fresh card with no status reads as null, not failed
   const r = await readStatusWithRetry(() => node(null), noSleep);
   assert.deepEqual(r, { currentStatus: null, readFailed: false });
 });
+
+test('readStatusWithRetry: onError is called once per failed attempt', async () => {
+  const seen = [];
+  const r = await readStatusWithRetry(() => { throw new Error('boom'); }, {
+    ...noSleep,
+    onError: (attempt, err) => seen.push([attempt, err.message]),
+  });
+  assert.deepEqual(r, { currentStatus: null, readFailed: true });
+  assert.deepEqual(seen, [[1, 'boom'], [2, 'boom']]);
+});
