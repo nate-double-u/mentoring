@@ -11,4 +11,11 @@ function parseExportedIssueNumbers(body) {
   return [...String(body || '').matchAll(/-\s+#(\d+)\s+—/g)].map(m => parseInt(m[1], 10));
 }
 
-module.exports = { parseExportedIssueNumbers };
+// True when ref is a branch the export workflow created. Guards the
+// destructive branch delete so only automation/lfx-export-* branches are
+// removed, mirroring the workflow's job-level scope.
+function isExportBranch(ref) {
+  return typeof ref === 'string' && ref.startsWith('automation/lfx-export-');
+}
+
+module.exports = { parseExportedIssueNumbers, isExportBranch };

@@ -2,7 +2,7 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { parseExportedIssueNumbers } = require('../lib/notify');
+const { parseExportedIssueNumbers, isExportBranch } = require('../lib/notify');
 
 // parseExportedIssueNumbers extracts the issue numbers the export workflow
 // writes into the PR body as "- #<n> — <name>". The em-dash (U+2014) is a
@@ -40,4 +40,30 @@ test('parseExportedIssueNumbers: requires the leading list dash', () => {
 
 test('parseExportedIssueNumbers: does not de-duplicate (captures current behaviour)', () => {
   assert.deepEqual(parseExportedIssueNumbers('- #5 — A\n- #5 — A again'), [5, 5]);
+});
+
+// isExportBranch guards the destructive branch delete: only branches the
+// export workflow creates (automation/lfx-export-*) may be removed.
+test('isExportBranch: true for an export branch', () => {
+  assert.equal(isExportBranch('automation/lfx-export-2026-03-Sep-Nov'), true);
+});
+
+test('isExportBranch: true for the bare prefix', () => {
+  assert.equal(isExportBranch('automation/lfx-export-'), true);
+});
+
+test('isExportBranch: false for other automation branches', () => {
+  assert.equal(isExportBranch('automation/landscape-sync'), false);
+});
+
+test('isExportBranch: false for main and unrelated branches', () => {
+  assert.equal(isExportBranch('main'), false);
+  assert.equal(isExportBranch('feature/x'), false);
+});
+
+test('isExportBranch: false for empty or non-string input', () => {
+  assert.equal(isExportBranch(''), false);
+  assert.equal(isExportBranch(undefined), false);
+  assert.equal(isExportBranch(null), false);
+  assert.equal(isExportBranch(42), false);
 });
