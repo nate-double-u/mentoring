@@ -32,4 +32,28 @@ Mentee application instructions can be found on the [Program Guidelines](https:/
 
 ---
 
+## Table of Contents
+
+- [OpenTelemetry](#opentelemetry)
+  - [OpenTelemetry Testing again](#opentelemetry-testing-again)
+
+## Accepted Projects
+
+### OpenTelemetry
+
+#### OpenTelemetry Testing again
+
+CNCF - OpenTelemetry: OpenTelemetry Testing again (2026 Term 3)
+
+- Description:
+
+  > Testing
+
+- Recommended Skills: OpenTelemetry
+- Technologies: OpenTelemetry
+- Mentor(s):
+  - Nate W (@nate-double-u, natew@cncf.io)
+  - Other Nate (@hackabletype, othernate@example.com)
+- Upstream Issue: https://github.com/cncf/mentoring/issues/1883
+- LFX URL: TBD
 
