@@ -6,8 +6,11 @@
 //     lfx-proposal-approvals.yml. A quoted comma (e.g. "Chainguard, Inc")
 //     must not shift later columns, or the maintainer-auth lookup would read
 //     the wrong GitHub-handle column and reject a real maintainer.
-//   - csvEscape: field quoter for the export tracking CSV, lifted verbatim
-//     from lfx-export.yml.
+//   - csvEscape: field quoter for the export tracking CSV, adapted from
+//     lfx-export.yml. One deliberate change from the original `|| ''`: it
+//     uses `?? ''`, so a falsy-but-valid 0 serializes as "0" rather than "".
+//     Unreachable today (validation requires a primary mentor); hardened for
+//     safety and covered by csv.test.js.
 
 // Parse one CSV row into an array of fields, honouring double-quoted fields
 // and "" escaping inside them.
