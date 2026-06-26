@@ -1,20 +1,20 @@
 {
-  "_generated": "2026-06-26T17:51:13.383Z",
+  "_generated": "2026-06-26T18:51:42.510Z",
   "_term": "2026 Term 3 (Sep-Nov)",
   "_count": 1,
   "programs": [
     {
-      "issue_number": 29,
-      "issue_url": "https://github.com/nate-double-u/mentoring/issues/29",
+      "issue_number": 32,
+      "issue_url": "https://github.com/nate-double-u/mentoring/issues/32",
       "cncf_project": "OpenTelemetry",
       "cncf_project_slug": "opentelemetry",
       "cncf_project_maturity": "graduated",
       "term": "2026 Term 3 (Sep-Nov)",
-      "program_name_full": "CNCF - OpenTelemetry: OpenTelemetry Testing again (2026 Term 3)",
-      "program_name_short": "OpenTelemetry Testing again",
-      "description": "Testing",
+      "program_name_full": "CNCF - OpenTelemetry: OpenTelemetry testing missing lfid (2026 Term 3)",
+      "program_name_short": "OpenTelemetry testing missing lfid",
+      "description": "testing again, one missing lfid",
       "technologies": "OpenTelemetry",
-      "skills": "OpenTelemetry",
+      "skills": "Testing",
       "mentors": [
         {
           "name": "Nate W",
@@ -35,7 +35,7 @@
       "prerequisites": {
         "resume": true,
         "cover_letter": true,
-        "school_enrollment": false,
+        "school_enrollment": true,
         "participation_permission": false,
         "coding_challenge": false,
         "coding_challenge_url": null,

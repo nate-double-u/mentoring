@@ -35,21 +35,21 @@ Mentee application instructions can be found on the [Program Guidelines](https:/
 ## Table of Contents
 
 - [OpenTelemetry](#opentelemetry)
-  - [OpenTelemetry Testing again](#opentelemetry-testing-again)
+  - [OpenTelemetry testing missing lfid](#opentelemetry-testing-missing-lfid)
 
 ## Accepted Projects
 
 ### OpenTelemetry
 
-#### OpenTelemetry Testing again
+#### OpenTelemetry testing missing lfid
 
-CNCF - OpenTelemetry: OpenTelemetry Testing again (2026 Term 3)
+CNCF - OpenTelemetry: OpenTelemetry testing missing lfid (2026 Term 3)
 
 - Description:
 
-  > Testing
+  > testing again, one missing lfid
 
-- Recommended Skills: OpenTelemetry
+- Recommended Skills: Testing
 - Technologies: OpenTelemetry
 - Mentor(s):
   - Nate W (@nate-double-u, natew@cncf.io)
