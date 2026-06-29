@@ -121,6 +121,12 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Commit only the files the script writes, so npm's untracked
+          # node_modules/ never lands in the generated PR.
+          add-paths: |
+            programs/lfx-mentorship/automation/projects.yml
+            .github/ISSUE_TEMPLATE/lfx-program-proposal.yml
+            .github/workflows/lfx-export.yml
           commit-message: |
             chore: sync CNCF project list from landscape
 

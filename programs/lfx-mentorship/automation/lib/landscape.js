@@ -29,9 +29,10 @@ function projectSlug(name, lfxSlug) {
 }
 
 // Extract the CNCF projects (graduated/incubating/sandbox) from a parsed
-// landscape.yml object, sorted by name (case-insensitive, by Unicode code
-// point to match the former Python sort). Keys are emitted in a fixed order so
-// the dumped projects.yml is byte-stable.
+// landscape.yml object, sorted by lowercased name using JS's default string
+// comparison (UTF-16 code units). The landscape's names are ASCII, so this
+// orders identically to the former Python sorted(key=str.lower). Keys are
+// emitted in a fixed order so the dumped projects.yml is byte-stable.
 function extractProjects(landscape) {
   const projects = [];
   for (const cat of landscape.landscape || []) {
