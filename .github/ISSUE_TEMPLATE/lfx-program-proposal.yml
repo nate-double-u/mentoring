@@ -389,8 +389,9 @@ body:
 
   # ── Standard mentee prerequisite: LFC102 (informational, not an input) ──
   # LFC102 is a standing CNCF requirement injected onto every program by the
-  # export (lib/prerequisites.js). Surfaced here so mentors know mentees will
-  # be expected to complete it; it is not a field they configure.
+  # export from programs/lfx-mentorship/automation/lib/prerequisites.js. Surfaced
+  # here so mentors know mentees will be expected to complete it; it is not a
+  # field they configure.
   - type: markdown
     attributes:
       value: |

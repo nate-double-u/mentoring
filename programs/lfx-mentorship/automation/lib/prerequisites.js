@@ -10,8 +10,10 @@
 // date, a description, and a "requires file upload" flag. The course URL is
 // carried inline in the description (LFX has no URL field). The due date is
 // term-wide and stamped at upload time, so it is intentionally absent here.
-// This object is the single source of truth for the form note, the export JSON,
-// and the Phase 2 upload.
+// This object is the single source of truth for the export JSON and the Phase 2
+// upload. The proposal form shows its own hardcoded note describing this
+// requirement; GitHub issue forms can't import a JS constant, so that copy is
+// maintained separately in .github/ISSUE_TEMPLATE/lfx-program-proposal.yml.
 const INCLUSIVE_COMMUNITY = {
   name: 'Inclusive Community',
   description:
