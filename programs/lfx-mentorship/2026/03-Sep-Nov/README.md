@@ -32,4 +32,29 @@ Mentee application instructions can be found on the [Program Guidelines](https:/
 
 ---
 
+## Table of Contents
+
+- [Aeraki Mesh](#aeraki-mesh)
+  - [Testing prerequisites](#testing-prerequisites)
+
+## Accepted Projects
+
+### Aeraki Mesh
+
+#### Testing prerequisites
+
+CNCF - Aeraki Mesh: Testing prerequisites (2026 Term 3)
+
+- Description:
+
+  > ## Description
+  > 
+  > testing prerequisites.
+
+- Recommended Skills: Testing
+- Technologies: Testing
+- Mentor(s):
+  - Nate W (@nate-double-u, natew@cncf.io)
+- Upstream Issue: https://github.com/cncf/mentoring/issues/1883
+- LFX URL: TBD
 
