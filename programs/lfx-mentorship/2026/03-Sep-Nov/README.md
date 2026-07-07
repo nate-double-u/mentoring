@@ -32,4 +32,55 @@ Mentee application instructions can be found on the [Program Guidelines](https:/
 
 ---
 
+## Table of Contents
+
+- [Aeraki Mesh](#aeraki-mesh)
+  - [testing testing testing](#testing-testing-testing)
+- [cert-manager](#cert-manager)
+  - [smoke test 2](#smoke-test-2)
+
+## Accepted Projects
+
+### Aeraki Mesh
+
+#### testing testing testing
+
+CNCF - Aeraki Mesh: testing testing testing (2026 Term 3)
+
+- Description:
+
+  > ## Description
+  > 
+  > Tests
+  > 
+  > ## Expected outcome
+  > 
+  > More tests
+
+- Recommended Skills: testing
+- Technologies: testing
+- Mentor(s):
+  - Nate W (@nate-double-u, natew@cncf.io)
+- Upstream Issue: https://github.com/cncf/mentoring/issues/1883
+- LFX URL: TBD
+
+### cert-manager
+
+#### smoke test 2
+
+CNCF - cert-manager: smoke test 2 (2026 Term 3)
+
+- Description:
+
+  > ## description
+  > 
+  > Testing
+
+- Recommended Skills: Testing
+- Technologies: Testing
+- Mentor(s):
+  - Nate W. (@nate-double-u, natew@cncf.io)
+  - Other nate (@hackabletype, nate@example.com)
+- Upstream Issue: https://github.com/cncf/mentoring/issues/1883
+- LFX URL: TBD
 
