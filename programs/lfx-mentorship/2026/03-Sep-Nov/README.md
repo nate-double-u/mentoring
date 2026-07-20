@@ -32,4 +32,29 @@ Mentee application instructions can be found on the [Program Guidelines](https:/
 
 ---
 
+## Table of Contents
+
+- [Backstage](#backstage)
+  - [E2E A material edit invalidation](#e2e-a-material-edit-invalidation)
+
+## Accepted Projects
+
+### Backstage
+
+#### E2E A material edit invalidation
+
+CNCF - Backstage: E2E A material edit invalidation (2026 Term 3)
+
+- Description:
+
+  > ~Description.~
+  > Edited description.
+
+- Recommended Skills: Go, Kubernetes
+- Technologies: Go, Kubernetes
+- Mentor(s):
+  - Hackable Type (@hackabletype, hackabletype@example.com)
+  - Nate W (@nate-double-u, nate@example.com)
+- Upstream Issue: https://github.com/cncf/mentoring/issues/1883
+- LFX URL: TBD
 
