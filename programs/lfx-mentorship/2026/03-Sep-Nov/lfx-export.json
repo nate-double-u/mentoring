@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-07-20T23:27:27.438Z",
+  "_generated": "2026-07-20T23:33:02.709Z",
   "_term": "2026 Term 3 (Sep-Nov)",
   "_count": 1,
   "programs": [
@@ -32,7 +32,7 @@
         }
       ],
       "upstream_issue_url": "https://github.com/cncf/mentoring/issues/1883",
-      "lfx_url": "",
+      "lfx_url": "https://mentorship.lfx.linuxfoundation.org/project/11500000-0000-4000-8000-000000000000",
       "prerequisites": {
         "resume": true,
         "cover_letter": true,
