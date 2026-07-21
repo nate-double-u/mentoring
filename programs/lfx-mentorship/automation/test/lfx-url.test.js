@@ -4,7 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
   recordedLfxUrlComment, parseRecordedLfxUrl, lfxUrlDecision, findExportedProgram,
-  exportTermLabel, readExports, locateExportedProgram,
+  exportTermLabel, readExports, locateExportedProgram, termMismatchWarning,
 } = require('../lib/lfx-url');
 
 const bot = (body) => ({ user: { login: 'github-actions[bot]' }, body });
@@ -289,4 +289,45 @@ test('exportTermLabel: collapses whitespace/newlines to a single line', () => {
 test('exportTermLabel: empty when neither source has a term', () => {
   assert.equal(exportTermLabel(null, ''), '');
   assert.equal(exportTermLabel({}, undefined), '');
+});
+
+// ── termMismatchWarning: surface a stale/edited Term vs the exported term ──
+// (#1938) /lfx-url trusts the export (content wins), but a Term-field mismatch
+// means a human should reconcile it, so we warn instead of correcting silently.
+test('termMismatchWarning: empty when the declared term matches the export', () => {
+  assert.equal(termMismatchWarning('2026 Term 3 (Sep-Nov)', '2026 Term 3 (Sep-Nov)'), '');
+});
+
+test('termMismatchWarning: empty when they match after normalizing space/case', () => {
+  assert.equal(termMismatchWarning('  2026   Term 3\n(sep-nov) ', '2026 Term 3 (Sep-Nov)'), '');
+});
+
+test('termMismatchWarning: empty when either term is missing (nothing to compare)', () => {
+  assert.equal(termMismatchWarning('', '2026 Term 3 (Sep-Nov)'), '');
+  assert.equal(termMismatchWarning('2026 Term 1 (Mar-May)', ''), '');
+  assert.equal(termMismatchWarning(null, undefined), '');
+});
+
+test('termMismatchWarning: warns and names both terms when they differ', () => {
+  const w = termMismatchWarning('2026 Term 1 (Mar-May)', '2026 Term 3 (Sep-Nov)');
+  assert.ok(w.startsWith('⚠️'), 'starts with the warning glyph');
+  // User-controlled term values are wrapped in inline code, matching how the
+  // validate workflow echoes user input — neutralizes stray @mentions/Markdown.
+  assert.ok(w.includes('`2026 Term 1 (Mar-May)`'), 'names the declared (issue) term in code');
+  assert.ok(w.includes('`2026 Term 3 (Sep-Nov)`'), 'names the exported term in code');
+});
+
+test('termMismatchWarning: neutralizes an @mention in an edited Term field', () => {
+  const w = termMismatchWarning('@acme/team', '2026 Term 3 (Sep-Nov)');
+  assert.ok(w.includes('`@acme/team`'), 'wraps the raw value in inline code so it cannot ping');
+  assert.ok(!/(^|[^`])@acme\/team/.test(w), 'no bare @mention escapes the code span');
+});
+
+test('termMismatchWarning: strips backticks so an edited Term cannot break out of the code span', () => {
+  // A backtick is the only character that can terminate an inline code span, so
+  // removing it fully neutralizes any embedded Markdown/@mention (no need for a
+  // CommonMark variable-length fence). A Term never legitimately contains one.
+  const w = termMismatchWarning('2026 `@acme/team` Term', '2026 Term 3 (Sep-Nov)');
+  assert.ok(w.includes('`2026 @acme/team Term`'), 'internal backticks removed; value stays inside its span');
+  assert.equal((w.match(/`/g) || []).length, 6, 'only the three span wrappers remain; no stray backticks');
 });
