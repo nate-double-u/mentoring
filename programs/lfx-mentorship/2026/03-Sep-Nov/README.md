@@ -32,4 +32,27 @@ Mentee application instructions can be found on the [Program Guidelines](https:/
 
 ---
 
+## Table of Contents
+
+- [Backstage](#backstage)
+  - [e2e content discovery](#e2e-content-discovery)
+
+## Accepted Projects
+
+### Backstage
+
+#### e2e content discovery
+
+CNCF - Backstage: e2e content discovery (2026 Term 3)
+
+- Description:
+
+  > Disposable e2e test proposal for cncf/mentoring#1938 (locate the `/lfx-url` export by content, not the editable Term). Safe to close and delete after the run.
+
+- Recommended Skills: Go
+- Technologies: Go
+- Mentor(s):
+  - Nate W (@nate-double-u, nate@example.com)
+- Upstream Issue: https://github.com/cncf/mentoring/issues/1883
+- LFX URL: TBD
 
