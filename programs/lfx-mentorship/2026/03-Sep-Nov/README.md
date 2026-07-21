@@ -56,5 +56,5 @@ CNCF - Backstage: E2E A material edit invalidation (2026 Term 3)
   - Hackable Type (@hackabletype, hackabletype@example.com)
   - Nate W (@nate-double-u, nate@example.com)
 - Upstream Issue: https://github.com/cncf/mentoring/issues/1883
-- LFX URL: https://mentorship.lfx.linuxfoundation.org/project/c1050000-0000-4000-8000-000000000000
+- LFX URL: https://mentorship.lfx.linuxfoundation.org/project/11500003-0000-4000-8000-000000000000
 
