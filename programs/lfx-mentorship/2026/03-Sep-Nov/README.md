@@ -55,7 +55,7 @@ CNCF - Backstage: cleanup e2e proposal B (2026 Term 3)
 - Mentor(s):
   - Nate W (@nate-double-u, nate@example.com)
 - Upstream Issue: https://github.com/cncf/mentoring/issues/1883
-- LFX URL: TBD
+- LFX URL: https://mentorship.lfx.linuxfoundation.org/project/aaaaaaaa-0000-4000-8000-0000000000b3
 
 #### cleanup e2e proposal A
 
