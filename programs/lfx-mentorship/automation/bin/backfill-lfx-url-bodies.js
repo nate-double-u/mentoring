@@ -116,7 +116,7 @@ async function applyBackfill(programs, {
   return summary;
 }
 
-async function main(argv, { exec = ghExec } = {}) {
+async function main(argv, { exec = ghExec, loadExports = readExports } = {}) {
   const opts = parseArgs(argv);
   if (opts.help) {
     console.log(USAGE);
@@ -132,7 +132,7 @@ async function main(argv, { exec = ghExec } = {}) {
   const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
   process.chdir(repoRoot);
 
-  const exports = readExports(fs, EXPORT_ROOT);
+  const exports = loadExports(fs, EXPORT_ROOT);
   const programs = planBackfill(exports, { term: opts.term });
   await applyBackfill(programs, { repo: opts.repo, dryRun: opts.dryRun, exec });
   return 0;

@@ -119,19 +119,31 @@ test('main: self-locates the repo root before reading exports', async () => {
   const automationDir = path.resolve(__dirname, '..');
   const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
   const calls = [];
+  let cwdAtRead = null;
 
   try {
     process.chdir(automationDir);
+    // Inject a deterministic export so the test does not depend on the real
+    // on-disk lfx-export.json data, and capture the cwd at read time to prove
+    // the chdir-to-repo-root happens BEFORE exports are read (the actual bug).
     const code = await main(['--repo', 'cncf/mentoring', '--term', '2026/03-Sep-Nov', '--dry-run'], {
       exec: async (args) => {
         calls.push(args);
         return 'proposal body';
       },
+      loadExports: () => {
+        cwdAtRead = process.cwd();
+        return [{
+          dir: 'programs/lfx-mentorship/2026/03-Sep-Nov',
+          data: { programs: [{ issue_number: 201, program_name_full: 'CNCF - X: Y (2026 Term 3)', lfx_url: URL1 }] },
+        }];
+      },
     });
 
     assert.equal(code, 0);
-    assert.equal(process.cwd(), repoRoot);
-    assert.ok(calls.length > 0, 'read exports from the repo root, not the automation dir');
+    assert.equal(cwdAtRead, repoRoot, 'exports are read AFTER chdir to the repo root');
+    assert.equal(process.cwd(), repoRoot, 'chdir to the repo root persists after main');
+    assert.ok(calls.length > 0, 'read the injected export and drove applyBackfill');
   } finally {
     process.chdir(startCwd);
   }
