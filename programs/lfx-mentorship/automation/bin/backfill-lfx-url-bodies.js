@@ -9,17 +9,21 @@
 //
 //   node bin/backfill-lfx-url-bodies.js --repo <owner/repo> [--term <year/termdir>] [--dry-run]
 //
+// The script self-locates the repo root, so it works from the repo root, the
+// automation dir, or a worktree root.
+//
 // The tested block formatting and export scanning logic live in lib/lfx-url.js.
 // This file is thin gh I/O glue: fetch the current issue body, compute the
 // idempotent replacement, and write it back only when it changes.
 
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { execFile } = require('node:child_process');
 const { readExports, recordedPrograms, upsertLfxUrlBlock } = require('../lib/lfx-url');
 
 const EXPORT_ROOT = 'programs/lfx-mentorship';
-const USAGE = 'Usage: node bin/backfill-lfx-url-bodies.js --repo <owner/repo> [--term <year/termdir>] [--dry-run]';
+const USAGE = 'Usage: node bin/backfill-lfx-url-bodies.js --repo <owner/repo> [--term <year/termdir>] [--dry-run] (self-locates repo root)';
 
 let tmpCounter = 0;
 
@@ -59,8 +63,7 @@ function planBackfill(exports, { term = '' } = {}) {
 }
 
 function writeBodyTempFile(body) {
-  const dir = path.join(process.cwd(), 'scratch');
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = os.tmpdir();
   const file = path.join(dir, `lfx-url-backfill-body-${process.pid}-${Date.now()}-${tmpCounter++}.md`);
   fs.writeFileSync(file, body, 'utf8');
   return file;
@@ -124,6 +127,11 @@ async function main(argv, { exec = ghExec } = {}) {
     return 1;
   }
 
+  // Cwd-proof the relative export root, matching the e2e harness convention.
+  // Works from the repo root, the automation dir, or a worktree root.
+  const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
+  process.chdir(repoRoot);
+
   const exports = readExports(fs, EXPORT_ROOT);
   const programs = planBackfill(exports, { term: opts.term });
   await applyBackfill(programs, { repo: opts.repo, dryRun: opts.dryRun, exec });
@@ -136,4 +144,4 @@ if (require.main === module) {
     .catch((err) => { console.error(`Error: ${err.message}`); process.exit(1); });
 }
 
-module.exports = { parseArgs, ghExec, planBackfill, applyBackfill };
+module.exports = { parseArgs, ghExec, planBackfill, applyBackfill, main };

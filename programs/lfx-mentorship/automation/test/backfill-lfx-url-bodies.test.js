@@ -2,7 +2,8 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { planBackfill, applyBackfill } = require('../bin/backfill-lfx-url-bodies');
+const path = require('node:path');
+const { planBackfill, applyBackfill, main } = require('../bin/backfill-lfx-url-bodies');
 const { upsertLfxUrlBlock } = require('../lib/lfx-url');
 
 const URL1 = 'https://mentorship.lfx.linuxfoundation.org/project/005db8db-7efe-4433-9605-91d14174c72c';
@@ -111,4 +112,27 @@ test('applyBackfill: unchanged body is reported and not edited', async () => {
   assert.equal(summary.unchanged, 1);
   assert.equal(calls.length, 1);
   assert.ok(lines.includes('#201 unchanged'));
+});
+
+test('main: self-locates the repo root before reading exports', async () => {
+  const startCwd = process.cwd();
+  const automationDir = path.resolve(__dirname, '..');
+  const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
+  const calls = [];
+
+  try {
+    process.chdir(automationDir);
+    const code = await main(['--repo', 'cncf/mentoring', '--term', '2026/03-Sep-Nov', '--dry-run'], {
+      exec: async (args) => {
+        calls.push(args);
+        return 'proposal body';
+      },
+    });
+
+    assert.equal(code, 0);
+    assert.equal(process.cwd(), repoRoot);
+    assert.ok(calls.length > 0, 'read exports from the repo root, not the automation dir');
+  } finally {
+    process.chdir(startCwd);
+  }
 });
